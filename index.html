@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f6efe3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f1813" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Everything happening at the MassKara Festival in Bacolod, updated all day." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Better Maskara" />
+    <meta property="og:title" content="Better Maskara" />
+    <meta property="og:description" content="Everything happening at the MassKara Festival in Bacolod, updated all day." />
+    <meta property="og:image" content="/icon-512.png" />
+    <meta name="apple-mobile-web-app-title" content="Better Maskara" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>Better Maskara</title>
+    <script>
+      // Apply a saved theme before first paint to avoid a light flash in dark mode.
+      try {
+        var t = localStorage.getItem("sm-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

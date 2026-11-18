@@ -1,0 +1,24 @@
+/*
+ * The app's look for a host page, scoped to `.bm-kit`. The host compiles this with its own Tailwind v4:
+ * utilities are generated against the app's tokens, but the token values only exist inside `.bm-kit`,
+ * so the host's own fonts and colours are untouched. Light theme only; the dark block isn't brought in.
+ *
+ * The host must also load kit/tokens.scoped.css's equivalent: the @theme block in design/tokens.css
+ * rewritten onto `.bm-kit` (the portfolio's vite plugin does this, so the two never drift).
+ */
+@import "tailwindcss/theme" theme(reference);
+@import "../design/tokens.css" theme(reference);
+@import "tailwindcss/utilities" source(none);
+@source "../components";
+@source "../craft";
+@source "../ui";
+@import "../design/craft.css";
+
+@layer base {
+  .bm-kit {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+}

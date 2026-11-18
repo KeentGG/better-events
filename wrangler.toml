@@ -1,0 +1,11 @@
+# The API and the ingest cron on Cloudflare Workers. The web app is built separately (Cloudflare Pages).
+# Secrets: `npx wrangler secret put DATABASE_URL` (and ADMIN_TOKEN, TURNSTILE_SECRET).
+name = "super-masskara-api"
+main = "server/worker.ts"
+compatibility_date = "2026-09-01"
+# postgres-js needs node:events and node:buffer on Workers.
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+# The ingest pass. Must stay `*/N` with N = INGEST_INTERVAL_MINUTES (server/worker.test.ts checks it).
+crons = ["*/15 * * * *"]

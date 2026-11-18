@@ -1,0 +1,56 @@
+# Public site. Port 80 stays open so Caddy can answer the certificate challenge and redirect to HTTPS.
+# Let's Encrypt only issues certificates for an IP on the short-lived profile (about six days).
+# The domain uses a normal certificate. Caddy renews both.
+# Postgres, the API, and the Caddy admin socket stay on localhost.
+example.com, www.example.com {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8787
+	}
+
+	handle {
+		root * /srv/masskara/dist
+		header /assets/* Cache-Control "public, max-age=31536000, immutable"
+		header /index.html Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+203.0.113.10, [2001:db8::1] {
+	tls {
+		issuer acme {
+			profile shortlived
+			disable_tlsalpn_challenge
+		}
+	}
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8787
+	}
+
+	handle {
+		root * /srv/masskara/dist
+		header /assets/* Cache-Control "public, max-age=31536000, immutable"
+		header /index.html Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

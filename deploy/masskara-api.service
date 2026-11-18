@@ -1,0 +1,20 @@
+[Unit]
+Description=Better Maskara API and ingest timer
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=masskara
+WorkingDirectory=/srv/masskara/app
+EnvironmentFile=/srv/masskara/app/.env
+ExecStart=/usr/bin/node --import tsx server/node.ts
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/masskara/app
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

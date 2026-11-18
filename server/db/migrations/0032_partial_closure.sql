@@ -1,0 +1,2 @@
+ALTER TABLE "items" ADD COLUMN "closure_extent" text;--> statement-breakpoint
+ALTER TABLE "items" ADD CONSTRAINT "items_closure_extent_ck" CHECK ("items"."closure_extent" is null or ("items"."closure_extent" = 'partial' and "items"."category" = 'road_closure'));

@@ -1,0 +1,60 @@
+{
+  "name": "super-masskara",
+  "description": "Mobile-first guide to everything happening at the MassKara Festival in Bacolod: announcements, schedule changes, traffic, weather, kiosks and raffles, updated all day.",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KeentGG/super-masskara.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "tsx watch --env-file-if-exists=.env server/node.ts",
+    "dev:worker": "wrangler dev --test-scheduled",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "deploy:api": "wrangler deploy",
+    "typecheck": "tsc -b",
+    "ingest": "tsx --env-file-if-exists=.env server/ingest/cli.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx --env-file-if-exists=.env server/db/seed.ts",
+    "collector:add": "tsx --env-file-if-exists=.env server/db/add-collector.ts",
+    "staff:add": "tsx --env-file-if-exists=.env server/db/add-staff.ts",
+    "db:studio": "drizzle-kit studio",
+    "demo:db": "bash scripts/demo-db.sh",
+    "demo:api": "PORT=8788 DEMO_NOW=2026-10-17T21:00:00+08:00 DATABASE_URL=postgres://postgres:postgres@localhost:55432/masskara_demo tsx --env-file-if-exists=.env server/node.ts",
+    "demo:web": "VITE_DEMO_NOW=2026-10-17T21:00:00+08:00 API_PROXY=http://localhost:8788 vite build --outDir dist-demo && API_PROXY=http://localhost:8788 vite preview --outDir dist-demo --port 5182 --strictPort",
+    "test": "vitest run",
+    "serve": "vite build --watch & vite preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@hono/node-server": "^2.1.1",
+    "drizzle-orm": "^0.45.3",
+    "hono": "^4.13.9",
+    "lucide-react": "^1.48.0",
+    "maplibre-gl": "^5.24.0",
+    "postgres": "^3.4.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "drizzle-kit": "^0.31.11",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2",
+    "wrangler": "^4.143.0"
+  }
+}

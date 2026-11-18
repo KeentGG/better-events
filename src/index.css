@@ -1,0 +1,518 @@
+@import "tailwindcss";
+/* Split so the portfolio can reuse the tokens and the craft styles as-is (see src/kit). */
+@import "./design/tokens.css";
+@import "./design/dark.css";
+@import "./design/craft.css";
+
+/*
+ * Layout. Phone first, and every wider layout comes from container queries or intrinsic grids,
+ * never from the viewport. See "Layout" in docs/DESIGN_SYSTEM.md.
+ *
+ * Containers:
+ *   app   The whole page. The site header and its compact bar lay themselves out from its width.
+ *   main  The content column. Pages lay themselves out from its width, so the same page works
+ *         full width, in a split window or on a phone.
+ *
+ * Lists and card grids use repeat(auto-fill, minmax(min(<card>, 100%), 1fr)) and need no query at all.
+ *
+ * .app uses inline-size containment, which makes it the containing block for position: fixed.
+ * That is why the compact header bar is sticky rather than fixed.
+ */
+@layer components {
+  .app {
+    container: app / inline-size;
+  }
+  .app-shell {
+    min-height: 100dvh;
+  }
+  .app-body {
+    display: flex;
+    min-height: 100dvh;
+    min-width: 0;
+    flex-direction: column;
+  }
+  .app-main {
+    container: main / inline-size;
+    /* Page gutter, and how far edge-to-edge strips reach past it. Strips only bleed on phones. */
+    --gutter: 1rem;
+    --bleed: var(--gutter);
+    width: 100%;
+    max-width: 96rem;
+    flex: 1;
+    margin-inline: auto;
+    padding: 1rem var(--gutter) 2.5rem;
+  }
+
+  @container app (width >= 40rem) {
+    .app-main {
+      --gutter: clamp(1.5rem, 3.5cqi, 3.5rem);
+      --bleed: 0px;
+      padding-block-start: 1.5rem;
+    }
+  }
+  @container app (width >= 60rem) {
+    .app-main {
+      padding-block-start: 2.25rem;
+    }
+  }
+
+  /* The page gutter outside .app-main, for the site header. Matches .app-main's. */
+  .page-gutter {
+    padding-inline: 1rem;
+  }
+  @container app (width >= 40rem) {
+    .page-gutter {
+      padding-inline: clamp(1.5rem, 3.5cqi, 3.5rem);
+    }
+  }
+
+  /*
+   * Site header (src/components/SiteHeader.tsx). One sticky element and a size container, so its layout
+   * follows the height it is given: on Now that starts at its natural height and shrinks as the page
+   * scrolls, down to --hc; other pages hold it at --hc. --p (0 open, 1 compact) and --fade drive the fades.
+   *
+   *   open     brand / controls, then the middle (area, prompt, what's on), then the menu pills.
+   *   shrinking  the middle gives up height first: it clips, its type shrinks and it fades out.
+   *   compact  under 9rem tall: the middle goes; the area picker and a search button join the brand.
+   *            With 52rem of width and under 7rem tall, brand, pills and controls share one row.
+   */
+  .hero-head {
+    --hc: 6.5rem;
+    /* The open header's tallest, in rem (read by the script). */
+    --hmax: 40;
+    --p: 1;
+    container: hero / size;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    isolation: isolate;
+    min-height: var(--hc);
+    height: var(--hc);
+    overflow-anchor: none;
+    background: var(--color-surface);
+    --hero-art-opacity: 0.08;
+  }
+  @container app (width >= 52rem) {
+    .hero-head {
+      --hc: 3.75rem;
+      --hmax: 34;
+    }
+  }
+  /* Demo mode adds a notice line above the brand; the bar grows by that line, no more. */
+  .hero-head[data-demo] {
+    --hc: 8.5rem;
+  }
+  @container app (width >= 52rem) {
+    .hero-head[data-demo] {
+      --hc: 6rem;
+    }
+  }
+  .hero-grid {
+    display: grid;
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto minmax(0, auto) auto;
+    grid-template-areas: "brand weather controls" "middle middle middle" "pills pills pills";
+    align-items: center;
+    align-content: start;
+    gap: 1.25rem 0.5rem;
+    padding-block: calc(env(safe-area-inset-top) + 1rem) 1.5rem;
+  }
+  .hero-head[data-demo] .hero-grid {
+    grid-template-rows: auto auto minmax(0, auto) auto;
+    grid-template-areas: "demo demo demo" "brand weather controls" "middle middle middle" "pills pills pills";
+  }
+  .hero-demo {
+    grid-area: demo;
+  }
+  .hero-brand {
+    grid-area: brand;
+  }
+  .hero-weather {
+    grid-area: weather;
+  }
+  .hero-controls {
+    grid-area: controls;
+  }
+  .hero-pills {
+    grid-area: pills;
+  }
+  .hero-middle {
+    grid-area: middle;
+    align-self: stretch;
+    min-height: 0;
+    overflow: hidden;
+    opacity: var(--fade, 1);
+  }
+  .hero-head[data-clipped] .hero-middle {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+  }
+  .hero-middle-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-block-end: 0.25rem;
+  }
+  /* Today's events: under the search on a phone, and a rail down the side once there is room (below). */
+  .hero-rail,
+  .hero-rail-title {
+    display: none;
+  }
+  /*
+   * With room, today's events run down the right from under the theme toggle to the foot of the header,
+   * and the weather leads the menu's row, beside Now. The rail is sized by the rows beside it and adds nothing to them.
+   * Only while the header is open: the compact layouts below take over under 9rem.
+   */
+  @container hero (width >= 54rem) and (height >= 9rem) {
+    .hero-head[data-rail] .hero-grid {
+      grid-template-columns: auto minmax(0, 1fr) minmax(20rem, 26rem);
+      grid-template-areas: "brand brand controls" "middle middle rail" "weather pills rail";
+    }
+    .hero-head[data-rail] :is(.hero-controls, .hero-rail) {
+      margin-inline-start: 1.5rem;
+    }
+    .hero-head[data-rail] .hero-rail {
+      display: block;
+      grid-area: rail;
+      align-self: stretch;
+      position: relative;
+      min-height: 0;
+      opacity: var(--fade, 1);
+    }
+    .hero-head[data-rail] .hero-rail-title {
+      display: flex;
+    }
+    .hero-head[data-rail] .hero-today-inline {
+      display: none;
+    }
+    /* No rail today: the weather still leads the menu's row. */
+    .hero-head:not([data-rail]) .hero-grid {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: "brand brand controls" "middle middle middle" "weather pills pills";
+    }
+    /* Demo mode keeps its notice as a full-width row above the brand. */
+    .hero-head[data-demo][data-rail] .hero-grid {
+      grid-template-areas: "demo demo demo" "brand brand controls" "middle middle rail" "weather pills rail";
+    }
+    .hero-head[data-demo]:not([data-rail]) .hero-grid {
+      grid-template-areas: "demo demo demo" "brand brand controls" "middle middle middle" "weather pills pills";
+    }
+  }
+  /* The prompt shrinks with the header, from the hero size to about two thirds of it. */
+  .hero-prompt {
+    font-size: calc(clamp(1.75rem, 1.1rem + 2.6cqi, 3rem) * (1 - 0.35 * var(--p)));
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 650;
+  }
+  .brand-short,
+  .hero-compact-only {
+    display: none;
+  }
+  @container hero (height < 9rem) {
+    .hero-head .hero-grid {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-rows: auto auto;
+      grid-template-areas: "brand weather controls" "pills pills pills";
+      row-gap: 0.5rem;
+      align-content: center;
+      padding-block: calc(env(safe-area-inset-top) + 0.5rem) 0.5rem;
+    }
+    .hero-head[data-demo] .hero-grid {
+      grid-template-rows: auto auto auto;
+      grid-template-areas: "demo demo demo" "brand weather controls" "pills pills pills";
+    }
+    .hero-head :is(.hero-middle, .hero-rail, .hero-rail-title) {
+      display: none;
+    }
+    .hero-head .hero-controls {
+      margin-inline-start: 0;
+    }
+    .hero-compact-only {
+      display: flex;
+    }
+    .brand-long {
+      display: none;
+    }
+    .brand-short {
+      display: inline;
+    }
+  }
+  /* Wide but short: the demo notice gets its own row above the compact bar, so the bar itself keeps its shape. */
+  @container hero (width >= 52rem) and (height < 9rem) {
+    .hero-head[data-demo] .hero-grid {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-rows: auto auto;
+      grid-template-areas: "demo demo demo demo" "brand pills weather controls";
+    }
+  }
+  /* The narrowest phones: the full name, the weather and the theme toggle share one row, so the name gives a little, then the rain chance goes (it's in the panel the pill opens). */
+  @container hero (width < 24rem) {
+    .hero-brand-name {
+      font-size: 1.1875rem;
+    }
+  }
+  @container hero (width < 21.5rem) {
+    .weather-rain {
+      display: none;
+    }
+  }
+  @container hero (width < 52rem) and (height < 9rem) {
+    .header-extra {
+      display: none;
+    }
+  }
+  @container hero (width >= 52rem) and (height < 7rem) {
+    .hero-head .hero-grid {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-rows: 1fr;
+      grid-template-areas: "brand pills weather controls";
+    }
+    .hero-pills {
+      margin-inline: 0.5rem;
+    }
+  }
+  @container hero (width >= 72rem) and (height < 9rem) {
+    .brand-long {
+      display: inline;
+    }
+    .brand-short {
+      display: none;
+    }
+  }
+
+  /*
+   * The full header's art: a soft mesh of festival dyes behind everything, and the splash and crown kept
+   * to a whisper (src/craft/HeroArt.tsx), fading out as the header compacts.
+   */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .hero-head {
+      --hero-art-opacity: 0.06;
+    }
+  }
+  :root[data-theme="dark"] .hero-head {
+    --hero-art-opacity: 0.06;
+  }
+  .hero-mesh {
+    background:
+      radial-gradient(60% 80% at 8% 10%, oklch(0.6 0.2 350 / 0.14), transparent 60%),
+      radial-gradient(50% 70% at 92% 0%, oklch(0.8 0.15 80 / 0.18), transparent 60%),
+      radial-gradient(55% 80% at 70% 100%, oklch(0.6 0.1 185 / 0.12), transparent 60%),
+      radial-gradient(40% 60% at 30% 90%, oklch(0.5 0.15 300 / 0.08), transparent 60%);
+  }
+  .hero-art {
+    opacity: calc(var(--hero-art-opacity) * (1 - var(--p)));
+  }
+  /* A blinking caret in the search field, after the example being typed. */
+  .hero-caret {
+    display: inline-block;
+    width: 0.08em;
+    height: 0.9em;
+    margin-inline-start: 0.12em;
+    vertical-align: -0.08em;
+    background: var(--color-primary);
+    animation: hero-caret 1.1s steps(1) infinite;
+  }
+  @keyframes hero-caret {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* Edge-to-edge on phones, a rounded panel once there is room around it. */
+  .bleed {
+    margin-inline: calc(var(--bleed) * -1);
+  }
+  .bleed-scroll {
+    margin-inline: calc(var(--bleed) * -1);
+    padding-inline: var(--bleed);
+  }
+  @container app (width >= 40rem) {
+    .bleed-panel {
+      border-inline-width: 1px;
+      border-radius: var(--radius-control);
+    }
+    /* Filter rows wrap instead of scrolling sideways when a pointer and room are likely. */
+    .bleed-scroll {
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+  }
+
+  /* Card grids: as many columns as fit, no query needed. Set --min on the element to change the card width. */
+  .auto-grid {
+    display: grid;
+    gap: var(--gap, 0.75rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--min, 18rem), 100%), 1fr));
+    align-items: start;
+  }
+  /* Few items that should share the row rather than leave empty columns. */
+  .auto-grid.fit {
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--min, 18rem), 100%), 1fr));
+    align-items: stretch;
+  }
+
+  /* Briefly marks the item a link or search result pointed to. */
+  .flash > div {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    transition: outline-color 0.6s var(--ease-out-quint);
+  }
+
+  /* Live pulse: a swipeable row on phones, one even row of tiles once there is room. */
+  .pulse {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 10.5rem;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+  @container main (width >= 36rem) {
+    .pulse {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(auto-fit, minmax(7.75rem, 1fr));
+      overflow: visible;
+    }
+  }
+
+  /* Headline type that grows with the content column rather than the screen. */
+  .text-hero {
+    font-size: clamp(1.75rem, 1.1rem + 2.6cqi, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 650;
+  }
+
+  /*
+   * Now page, under the site header: the feed with a side panel of tips, traffic and what's around.
+   * Phones put the panel first, so what to know comes before the long feed; with room for a 36rem
+   * reading column plus the panel, it moves beside the feed and stays in view while it scrolls.
+   */
+  .now-grid {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "side" "feed";
+  }
+  /* The hero banner, when staff have one up: full width, above everything. A class, so no empty row and gap when there's none. */
+  .now-grid.with-banner {
+    grid-template-areas: "banner" "side" "feed";
+  }
+  .now-grid > [data-area] {
+    min-width: 0;
+  }
+  .now-grid > [data-area="banner"] {
+    grid-area: banner;
+  }
+  .now-grid > [data-area="side"] {
+    grid-area: side;
+  }
+  .now-grid > [data-area="feed"] {
+    grid-area: feed;
+  }
+  @container main (width >= 54rem) {
+    .now-grid {
+      column-gap: clamp(2rem, 4cqi, 3.5rem);
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+      grid-template-areas: "feed side";
+    }
+    .now-grid.with-banner {
+      grid-template-rows: auto 1fr;
+      grid-template-areas: "banner banner" "feed side";
+    }
+    .now-grid > [data-area="side"] {
+      position: sticky;
+      /* Clears the compact header bar. */
+      top: 5rem;
+      align-self: start;
+    }
+  }
+
+  /* Search: a full-screen sheet on phones, a centred panel once there is room around it. */
+  .palette {
+    margin: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+  }
+  .palette[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  @container app (width >= 40rem) {
+    .palette {
+      margin: 12dvh auto auto;
+      width: min(36rem, 100% - 2rem);
+      height: auto;
+      max-height: 70dvh;
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-sheet);
+      box-shadow: var(--shadow-overlay);
+    }
+  }
+
+  /* Traffic page: the map takes the room, the list sits beside it once both fit. Intrinsic, no query. */
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap, 1.25rem);
+    align-items: flex-start;
+  }
+  .split > .split-main {
+    flex: 999 1 var(--main, 32rem);
+    min-width: min(100%, var(--main, 32rem));
+  }
+  .split > .split-side {
+    flex: 1 1 var(--side, 18rem);
+  }
+  /* A full-width row under the pair, once the side column has wrapped or sat beside the main. */
+  .split > .split-span {
+    flex: 1 1 100%;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-surface font-sans text-ink antialiased;
+    /* Same grain as .paper, fixed so it stays put while the feed scrolls. */
+    background-image: radial-gradient(color-mix(in oklch, var(--color-weave) 55%, transparent) 0.9px, transparent 1.3px);
+    background-size: 22px 22px;
+    background-attachment: fixed;
+    font-feature-settings: "cv11", "ss01";
+    /* Posts are typed by people and carry long links; one unbroken link must never widen the page on a phone. */
+    overflow-wrap: break-word;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-primary-soft);
+  }
+}
+
+/* iOS Safari zooms the page in on any field whose text is under 16px, and doesn't zoom back. Unlayered, so it beats the text-sm on fields. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

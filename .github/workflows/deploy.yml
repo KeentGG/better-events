@@ -1,0 +1,89 @@
+# Pushes to dev only run the checks; pushes (merges) to main also build the image and deploy it.
+# Deploy: the VPS runs the app rootless as a dedicated app user (Podman Quadlet) behind a host Caddy. CI joins the
+# tailnet as tag:ci and runs `ssh app-user@your-vps-host <image>`. On the box that key may only run
+# /usr/local/bin/app-deploy, which pulls the image, restarts the app, waits for its health check and rolls back if
+# it fails.
+name: Deploy
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+
+  image:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/keentgg/super-masskara:${{ github.sha }}
+          # Remove the two DEMO_NOW lines below to return the site to the live clock.
+          build-args: |
+            VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}
+            VITE_DEMO_NOW=2026-10-17T21:00:00+08:00
+            DEMO_NOW=2026-10-17T21:00:00+08:00
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      # The job's GITHUB_TOKEN is handed to app-deploy for this one pull; it expires when the job ends.
+      packages: read
+      # Tailscale workload identity federation: GitHub's OIDC token buys a tag:ci node, no stored secret.
+      id-token: write
+    steps:
+      - uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ vars.TS_CLIENT_ID }}
+          audience: ${{ vars.TS_AUDIENCE }}
+          tags: tag:ci
+      - name: Deploy to your-vps-host
+        env:
+          SSH_KEY: ${{ secrets.APP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.APP_DEPLOY_KNOWN_HOSTS }}
+          PULL_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/app-deploy && chmod 600 ~/.ssh/app-deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$PULL_CREDS" | ssh -i ~/.ssh/app-deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=30 -o ConnectionAttempts=3 \
+            app-user@your-vps-host "ghcr.io/keentgg/super-masskara:${GITHUB_SHA}"

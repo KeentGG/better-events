@@ -1,0 +1,3 @@
+ALTER TABLE "items" ADD COLUMN "daily_from" smallint;--> statement-breakpoint
+ALTER TABLE "items" ADD COLUMN "daily_to" smallint;--> statement-breakpoint
+ALTER TABLE "items" ADD CONSTRAINT "items_daily_hours_ck" CHECK (("items"."daily_from" is null) = ("items"."daily_to" is null) and ("items"."daily_from" is null or ("items"."daily_from" between 0 and 1439 and "items"."daily_to" between 0 and 1439 and "items"."daily_from" <> "items"."daily_to")));

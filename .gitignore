@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-demo
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store
+.wrangler
+.dev.vars
+.claude/
+CLAUDE.md

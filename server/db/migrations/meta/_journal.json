@@ -1,0 +1,265 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790580267752,
+      "tag": "0000_init",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790593593486,
+      "tag": "0001_team_desk",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790623291250,
+      "tag": "0002_mission_control_health",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790661033678,
+      "tag": "0003_staff",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790666021929,
+      "tag": "0004_flags_and_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790666689721,
+      "tag": "0005_new_categories",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790672416208,
+      "tag": "0006_items_raw_post_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790672561778,
+      "tag": "0007_rename_kiosks_to_places",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790672588432,
+      "tag": "0008_places_kind_and_updated_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790672817037,
+      "tag": "0009_data_groups_stale_overrides",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790672957198,
+      "tag": "0010_item_actions_edit_and_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790690375591,
+      "tag": "0011_desk_authorship",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790691485255,
+      "tag": "0012_conflict_item",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790694833218,
+      "tag": "0013_tips",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790700141334,
+      "tag": "0014_item_place",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790741986398,
+      "tag": "0015_place_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790741987692,
+      "tag": "0016_drop_place_kind_enum",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790850751882,
+      "tag": "0017_item_action_end",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790861880612,
+      "tag": "0018_topics",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790910369539,
+      "tag": "0019_event_tba_original_start",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790916330892,
+      "tag": "0020_event_notes_to_description",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790917000000,
+      "tag": "0021_seed_venue_streets_citywide",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1790919000000,
+      "tag": "0022_event_organiser_all_day",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790943416111,
+      "tag": "0023_event_original_kind",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791445540984,
+      "tag": "0024_lane_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791629048161,
+      "tag": "0025_interest_topics",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791646563851,
+      "tag": "0026_result_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1791648727879,
+      "tag": "0027_event_source_note",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1791648765062,
+      "tag": "0028_submissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791807204248,
+      "tag": "0029_notice_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1791807873355,
+      "tag": "0030_item_retime",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791808350703,
+      "tag": "0031_place_closed_archived",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791808762658,
+      "tag": "0032_partial_closure",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791809188053,
+      "tag": "0033_crowd_readings",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791809702594,
+      "tag": "0034_event_recurrence",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791810462746,
+      "tag": "0035_notice_daily_hours",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791811315852,
+      "tag": "0036_event_venues",
+      "breakpoints": true
+    }
+  ]
+}
