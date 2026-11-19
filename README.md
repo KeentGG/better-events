@@ -1,6 +1,6 @@
 # Better Masskara
 
-A mobile-first live guide to Bacolod's three-week MassKara Festival, at [bettermasskara.com](https://bettermasskara.com).
+An AI agent driven social media aggregator for events at the MassKara Festival in Bacolod: it gathers schedule changes, traffic, promos, safety and winners from Facebook, X and other pages for three festival weeks, at [bettermasskara.com](https://bettermasskara.com).
 
 | Desktop | Mobile |
 | --- | --- |
