@@ -26,7 +26,7 @@ The bots gather posts from Facebook, X and other pages and push them into the si
 
 Every 15 minutes an ingest pass pulls the weather from Open-Meteo and runs the classifier over the posts people sent in. The feed, schedule, traffic map and Around places then read the same Postgres database.
 
-**Status:** the bots ran live through 18 October 2026. The site is quiet now and launches publicly at next year's festival.
+**Status:** the bots ran live through 18 October 2026. The site is quiet now and launches publicly at next year's festival. The bots run on their own infrastructure and their code is not in this repo; see "Posting and editing" below for how to set up your own.
 
 ## Stack
 
@@ -71,6 +71,8 @@ npm run demo:web  # build and preview at http://localhost:5182
 Production is pinned the same way, against the real database and with no pruning: the image build in `.github/workflows/deploy.yml` passes `VITE_DEMO_NOW` and `DEMO_NOW` (`2026-10-17T21:00:00+08:00`), so the deployed clock is frozen, the feed stops at the pin, `/api/weather` serves the snapshot in `server/data/demo-weather.json`, writes answer 403 and ingest is off. To return to the live clock, delete those two lines from the workflow's `build-args` and redeploy; an empty value means off.
 
 ## Posting and editing
+
+The posting side is maintained by the four Grok bots described above, and the bots are not part of this repo. What ships here is the site and the API they post through. To run your own bot or script on your own infrastructure, point it at your own API URL and use the two endpoints below; section 6 of `docs/ARCHITECTURE.md`, "Posting through the API (agents and scripts)", covers the calls, token setup and the rules around areas, place kinds and topics.
 
 The ingest pass runs every 15 minutes. Locally the API runs it in process when one is due; set `INGEST_TIMER=off` when something else runs it. `npm run ingest` runs one pass now.
 
