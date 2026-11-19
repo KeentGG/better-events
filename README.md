@@ -1,20 +1,36 @@
-# Better Maskara
+# Better Masskara
 
-Mobile-first website with everything happening at the MassKara Festival in Bacolod: official announcements, schedule changes, delays, winners, traffic, weather, kiosks and raffles, updated all day.
-
-## Screenshots
+A mobile-first live guide to Bacolod's three-week MassKara Festival, at [bettermasskara.com](https://bettermasskara.com).
 
 | Desktop | Mobile |
 | --- | --- |
 | ![Live feed on desktop](docs/screenshots/now-light.png) | ![Live feed on mobile](docs/screenshots/now-mobile.png) |
 
-Read `docs/ARCHITECTURE.md` for sources, data model, hosting and the roadmap, and `docs/DESIGN_SYSTEM.md` for tokens and components (live at `/#/design`), and `docs/FIRST_IMPRESSION.md` for the feature list and what a first visit should feel like.
+## About this repository
 
-Posting through the API (agents sourcing posts from Facebook and elsewhere): read "Posting through the API" in `docs/ARCHITECTURE.md` §6 first. Add a missing area, place kind or topic instead of working around it, and report a gap only when no call there can carry the post.
+This is a fresh public release. The earlier history lived in a private repo because it contained non-public production domains and IP addresses, so this public repo starts from a clean commit. The full history stays private and is available to walk through on request, just ask.
+
+## What it does
+
+Four proactive AI bots (Grok) run the feed:
+
+* a lead that keeps the plan and the wake-ups
+* a specialist for the schedule
+* a specialist for traffic
+* a specialist for promos and places
+
+The bots gather posts from Facebook, X and other pages and push them into the site through the API. Posts go to one of two endpoints, and both store the sender with the post:
+
+* monitoring team members (collectors) push the posts they find, each with their own token, to `POST /api/ingest/posts`
+* bots and authors post finished copy through the curator inbox, `POST /api/control/posts`, where a rule classifier files it straight away
+
+Every 15 minutes an ingest pass pulls the weather from Open-Meteo and runs the classifier over the posts people sent in. The feed, schedule, traffic map and Around places then read the same Postgres database.
+
+**Status:** the bots ran live through 18 October 2026. The site is quiet now and launches publicly at next year's festival.
 
 ## Stack
 
-React 19 + Vite 8, Tailwind CSS v4, lucide-react icons, own design system (`src/ui`, tokens in `src/index.css`), Hono API (`server/`), Drizzle ORM + Postgres.
+React 19 + Vite 8, Tailwind CSS v4 with its own design system (`src/ui`, tokens in `src/index.css`), lucide-react icons, Hono API (`server/`), Drizzle ORM + Postgres. 37 SQL migrations. Tests are Vitest (`*.test.ts` files across `server/` and `src/`).
 
 ## Run locally
 
@@ -28,6 +44,13 @@ npm run dev                   # web app on http://localhost:5173
 ```
 
 Without the API the web app shows clearly labeled sample data.
+
+## Tests
+
+```sh
+npm test          # vitest run over every *.test.ts file
+npm run typecheck
+```
 
 ## Demo mode
 
@@ -43,7 +66,9 @@ npm run demo:web  # build and preview at http://localhost:5182
 
 Production is pinned the same way, against the real database and with no pruning: the image build in `.github/workflows/deploy.yml` passes `VITE_DEMO_NOW` and `DEMO_NOW` (`2026-10-17T21:00:00+08:00`), so the deployed clock is frozen, the feed stops at the pin, `/api/weather` serves the snapshot in `server/data/demo-weather.json`, writes answer 403 and ingest is off. To return to the live clock, delete those two lines from the workflow's `build-args` and redeploy; an empty value means off.
 
-The ingest pass (Open-Meteo weather, then the classifier over posts people sent in) runs every 15 minutes. Locally the API runs it in process when one is due; set `INGEST_TIMER=off` when something else runs it. `npm run ingest` runs one pass now.
+## Posting and editing
+
+The ingest pass runs every 15 minutes. Locally the API runs it in process when one is due; set `INGEST_TIMER=off` when something else runs it. `npm run ingest` runs one pass now.
 
 Add a post through the curator inbox (it is classified straight away):
 
@@ -69,6 +94,8 @@ The team can use screens instead of curl. They are not linked from the public na
 
 Each person has one token, which every team page accepts and the device remembers once.
 
+## Mission control
+
 Mission control (internal, see `docs/MISSION_CONTROL.md`) is at `/#/control`: a wall with one tile per data group, green, gray (stale) or red (broken). **Watch** shows what each group last got; **Update** turns each tile into buttons that open the right desk form. Staff and team members sign in with their own token (team members land in Update and see no flags); `ADMIN_TOKEN` also works, watch only. Below the wall, the intake table (or graph) lists what came in and what it became. "Preview with sample data" shows the wall without a server.
 
 ```sh
@@ -77,9 +104,11 @@ curl localhost:8787/api/control/board -H "authorization: Bearer <token>"     # g
 curl localhost:8787/api/control/sources -H "authorization: Bearer <token>"   # fetcher and collector health
 ```
 
-## Deploy the API (Cloudflare Workers)
+## Deploy
 
-`server/worker.ts` serves the API and runs the ingest pass from the cron in `wrangler.toml`. The web app is built separately (`npm run build`, Cloudflare Pages).
+The GitHub Actions workflow in `.github/workflows/deploy.yml` runs the tests, builds a Docker image from the repo's `Dockerfile` and deploys it: the API and the built site run in one container behind Caddy, with the database env in `.env` (see `deploy/Caddyfile`, `deploy/masskara-api.service`, `deploy/backup.sh`).
+
+The API is also portable to Cloudflare Workers, configured in `wrangler.toml`: `server/worker.ts` serves the API and runs the ingest pass from the cron there, and the web app is built separately.
 
 ```sh
 npx wrangler secret put DATABASE_URL        # also ADMIN_TOKEN and TURNSTILE_SECRET
@@ -88,7 +117,7 @@ npm run deploy:api
 npm run dev:worker                          # local Worker; curl localhost:8787/__scheduled runs the cron
 ```
 
-## Layout
+## Project layout
 
 ```
 src/
@@ -100,8 +129,18 @@ server/
   app.ts         Hono API (portable: Cloudflare Workers, Vercel, Node)
   node.ts        local Node entry (API + ingest timer)
   worker.ts      Cloudflare Workers entry (API + ingest cron)
-  db/            Drizzle schema, client, migrations, seed
+  db/            Drizzle schema, client, 37 migrations, seed
   ingest/        weather (Open-Meteo), rule classifier, the ingest pass and its scheduler
-  items/         item actions (verify, hide, edit…) shared by mission control, the inbox and the desk
+  items/         item actions (verify, hide, edit) shared by mission control, the inbox and the desk
   control/       mission control groups and feeds, fetcher registry, board, inbox and sources queries
 ```
+
+## Docs
+
+* `docs/ARCHITECTURE.md`: sources, data model, API endpoints, hosting, roadmap. Section 6, "Posting through the API (agents and scripts)", is the starting point if you add an agent or script that posts.
+* `docs/DESIGN_SYSTEM.md`: tokens and components, live at `/#/design`
+* `docs/FIRST_IMPRESSION.md`: the feature list and what a first visit should feel like
+* `docs/MISSION_CONTROL.md`: the internal health wall
+* `docs/TOPICS_PLAN.md` and `docs/BRAND_MASSKARA.md`: the topics layer and the festival brand
+
+If you add a missing area, place kind or topic through the API, add it instead of working around it, and report a gap only when no call there can carry the post.
