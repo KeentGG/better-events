@@ -32,6 +32,10 @@ Every 15 minutes an ingest pass pulls the weather from Open-Meteo and runs the c
 
 React 19 + Vite 8, Tailwind CSS v4 with its own design system (`src/ui`, tokens in `src/index.css`), lucide-react icons, Hono API (`server/`), Drizzle ORM + Postgres. 37 SQL migrations. Tests are Vitest (`*.test.ts` files across `server/` and `src/`).
 
+The design system has a living preview at `/#/design`:
+
+![Design system preview with typography and color tokens](docs/screenshots/design-preview.png)
+
 ## Run locally
 
 ```sh
@@ -90,13 +94,24 @@ curl -X POST localhost:8787/api/ingest/posts -H "authorization: Bearer <token>" 
 The team can use screens instead of curl. They are not linked from the public nav; share the links:
 
 * `/#/team`: the team desk. Post closures, traffic levels, event changes, winners and announcements, and edit the schedule, Around places (with a map pin) and the visitor guide's tips. Area pickers search the list and can add a new area on the spot. Team members and staff both use it with their own token.
+
+![The team desk with cards for closures, crowd levels, event changes, winners, announcements, schedule, places, visitor guide and suggestions](docs/screenshots/team-desk.png)
+
 * `/#/inbox`: curators publish, hide or fix posts the classifier was unsure about. Staff only (`ADMIN_TOKEN` also works). Publishing verifies the item, so it shows as "Verified by staff".
+
+![The curator inbox with published cards, each with hide and edit controls](docs/screenshots/inbox.png)
 
 Each person has one token, which every team page accepts and the device remembers once.
 
 ## Mission control
 
 Mission control (internal, see `docs/MISSION_CONTROL.md`) is at `/#/control`: a wall with one tile per data group, green, gray (stale) or red (broken). **Watch** shows what each group last got; **Update** turns each tile into buttons that open the right desk form. Staff and team members sign in with their own token (team members land in Update and see no flags); `ADMIN_TOKEN` also works, watch only. Below the wall, the intake table (or graph) lists what came in and what it became. "Preview with sample data" shows the wall without a server.
+
+![Mission control: a wall of data group tiles, each with its last fetches and staleness window](docs/screenshots/control-wall.png)
+
+The Input audit page (`/#/audit`) reviews every group's forms against what a volunteer needs to post from their phone:
+
+![The wall audit: top issues and per group reader side notes with fixes](docs/screenshots/control-audit.png)
 
 ```sh
 npm run staff:add -- "Maria"   # prints the token once
